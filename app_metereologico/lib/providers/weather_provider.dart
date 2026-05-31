@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../models/forecast_model.dart';
 import '../services/brasil_api_service.dart';
 import '../services/supabase_service.dart';
+import '../services/preferences_service.dart';
 
 class WeatherProvider extends ChangeNotifier {
 
@@ -81,4 +82,30 @@ class WeatherProvider extends ChangeNotifier {
       notifyListeners();
     }
   }
+  List<String> favorites = [];
+
+Future<void> loadFavorites() async {
+
+  favorites =
+      await PreferencesService()
+          .getFavorites();
+
+  notifyListeners();
+}
+
+Future<void> addFavorite(
+    String city) async {
+
+  if (!favorites.contains(city)) {
+
+    favorites.add(city);
+
+    await PreferencesService()
+        .saveFavorites(
+      favorites,
+    );
+
+    notifyListeners();
+  }
+}
 }

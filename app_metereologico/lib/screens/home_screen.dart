@@ -7,77 +7,80 @@ import '../widgets/weather_card.dart';
 import '../widgets/forecast_chart.dart';
 import '../widgets/weather_map.dart';
 
-class HomeScreen extends StatelessWidget {
+import 'history_screen.dart';
+import 'favorites_screen.dart';
 
+class HomeScreen extends StatelessWidget {
   const HomeScreen({
     super.key,
   });
 
   @override
   Widget build(BuildContext context) {
-
-    final provider =
-        context.watch<
-            WeatherProvider>();
+    final provider = context.watch<WeatherProvider>();
 
     return Scaffold(
-
       appBar: AppBar(
-        title:
-            const Text(
+        title: const Text(
           'Clima Brasil',
         ),
+        actions: [
+          IconButton(
+            icon: const Icon(
+              Icons.history,
+            ),
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (_) => const HistoryScreen(),
+                ),
+              );
+            },
+          ),
+          IconButton(
+            icon: const Icon(
+              Icons.star,
+            ),
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (_) => const FavoritesScreen(),
+                ),
+              );
+            },
+          ),
+        ],
       ),
-
       body: SingleChildScrollView(
-
         child: Padding(
-
-          padding:
-              const EdgeInsets.all(
+          padding: const EdgeInsets.all(
             16,
           ),
-
           child: Column(
-
             children: [
-
               const CitySearch(),
-
               const SizedBox(
                 height: 20,
               ),
-
-              if (provider.loading)
-                const CircularProgressIndicator(),
-
-              if (provider.forecasts
-                  .isNotEmpty) ...[
-
+              if (provider.loading) const CircularProgressIndicator(),
+              if (provider.forecasts.isNotEmpty) ...[
                 WeatherCard(
-                  city:
-                      provider.selectedCity,
-                  forecast:
-                      provider.forecasts
-                          .first,
+                  city: provider.selectedCity,
+                  forecast: provider.forecasts.first,
                 ),
-
                 const SizedBox(
                   height: 20,
                 ),
-
                 ForecastChart(
-                  forecasts:
-                      provider.forecasts,
+                  forecasts: provider.forecasts,
                 ),
-
                 const SizedBox(
                   height: 20,
                 ),
-
                 WeatherMap(
-                  city:
-                      provider.selectedCity,
+                  city: provider.selectedCity,
                 ),
               ]
             ],
