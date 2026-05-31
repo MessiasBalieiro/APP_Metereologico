@@ -7,11 +7,13 @@ import '../services/location_service.dart';
 import '../services/location_to_city_service.dart';
 import '../services/preferences_service.dart';
 import '../services/supabase_service.dart';
+import '../services/city_coordinates_service.dart';
 
 class WeatherProvider extends ChangeNotifier {
   final BrasilApiService _api = BrasilApiService();
 
   final SupabaseService _database = SupabaseService();
+  final CityCoordinatesService _coordinatesService = CityCoordinatesService();
 
   bool loading = false;
 
@@ -40,8 +42,7 @@ class WeatherProvider extends ChangeNotifier {
 
       final cityData = cities.first;
 
-      final forecastResponse =
-          await _api.getForecast(cityData['id']);
+      final forecastResponse = await _api.getForecast(cityData['id']);
 
       forecasts.clear();
 
@@ -53,20 +54,35 @@ class WeatherProvider extends ChangeNotifier {
 
       selectedCity = cityData['nome'];
 
+      final location = await _coordinatesService.getCoordinates(
+        selectedCity,
+      );
+
+      if (location != null) {
+        currentLatitude = location['lat']!;
+
+        currentLongitude = location['lon']!;
+
+        debugPrint(
+          'Nova localização: '
+          '$currentLatitude, $currentLongitude',
+        );
+      }
+
+      debugPrint(
+        'Nova localização: '
+        '$currentLatitude, $currentLongitude',
+      );
+
       await _database.saveWeather({
         "city": selectedCity,
         "latitude": currentLatitude,
         "longitude": currentLongitude,
-        "temperature":
-            forecasts.isNotEmpty
-                ? forecasts.first.maxTemp
-                : 0,
+        "temperature": forecasts.isNotEmpty ? forecasts.first.maxTemp : 0,
         "humidity": 0,
         "precipitation": 0,
         "weather_condition":
-            forecasts.isNotEmpty
-                ? forecasts.first.condition
-                : "",
+            forecasts.isNotEmpty ? forecasts.first.condition : "",
       });
     } catch (e) {
       debugPrint(
@@ -79,20 +95,16 @@ class WeatherProvider extends ChangeNotifier {
   }
 
   Future<void> loadFavorites() async {
-    favorites =
-        await PreferencesService()
-            .getFavorites();
+    favorites = await PreferencesService().getFavorites();
 
     notifyListeners();
   }
 
-  Future<void> addFavorite(
-      String city) async {
+  Future<void> addFavorite(String city) async {
     if (!favorites.contains(city)) {
       favorites.add(city);
 
-      await PreferencesService()
-          .saveFavorites(
+      await PreferencesService().saveFavorites(
         favorites,
       );
 
@@ -101,11 +113,9 @@ class WeatherProvider extends ChangeNotifier {
   }
 
   Future<void> loadTheme() async {
-    final prefs =
-        await SharedPreferences.getInstance();
+    final prefs = await SharedPreferences.getInstance();
 
-    darkMode =
-        prefs.getBool('darkMode') ?? false;
+    darkMode = prefs.getBool('darkMode') ?? false;
 
     notifyListeners();
   }
@@ -113,8 +123,7 @@ class WeatherProvider extends ChangeNotifier {
   Future<void> toggleTheme() async {
     darkMode = !darkMode;
 
-    final prefs =
-        await SharedPreferences.getInstance();
+    final prefs = await SharedPreferences.getInstance();
 
     await prefs.setBool(
       'darkMode',
@@ -126,19 +135,13 @@ class WeatherProvider extends ChangeNotifier {
 
   Future<void> loadCurrentCity() async {
     try {
-      final position =
-          await LocationService()
-              .getCurrentLocation();
+      final position = await LocationService().getCurrentLocation();
 
-      currentLatitude =
-          position.latitude;
+      currentLatitude = position.latitude;
 
-      currentLongitude =
-          position.longitude;
+      currentLongitude = position.longitude;
 
-      final city =
-          await LocationToCityService()
-              .getCityName(
+      final city = await LocationToCityService().getCityName(
         currentLatitude,
         currentLongitude,
       );
