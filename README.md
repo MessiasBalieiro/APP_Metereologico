@@ -27,7 +27,7 @@ O projeto foi construído utilizando as seguintes tecnologias e pacotes:
 * **[BrasilAPI](https://brasilapi.com.br/):** Consumo de dados de previsão do tempo e geolocalização das cidades brasileiras.
 * **[Supabase](https://supabase.com/):** Banco de dados e autenticação para salvar o histórico e os favoritos em nuvem.
 * **[Fl Chart](https://pub.dev/packages/fl_chart):** Para a renderização dos gráficos de temperatura máxima e mínima.
-* **[Flutter Map](https://pub.dev/packages/flutter_map) / [Google Maps Flutter](https://pub.dev/packages/google_maps_flutter):** Para a exibição do mapa da cidade selecionada *(ajuste de acordo com o pacote que usou)*.
+* **[Flutter Map](https://pub.dev/packages/flutter_map):** Para a exibição do mapa da cidade selecionada.
 
 ---
 
