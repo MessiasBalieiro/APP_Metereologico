@@ -2,19 +2,20 @@ import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:latlong2/latlong.dart';
 
-class WeatherMap
-    extends StatelessWidget {
+class WeatherMap extends StatelessWidget {
 
-  final String city;
+  final double latitude;
+
+  final double longitude;
 
   const WeatherMap({
     super.key,
-    required this.city,
+    required this.latitude,
+    required this.longitude,
   });
 
   @override
-  Widget build(
-      BuildContext context) {
+  Widget build(BuildContext context) {
 
     return SizedBox(
 
@@ -24,13 +25,12 @@ class WeatherMap
 
         options: MapOptions(
 
-          initialCenter:
-              const LatLng(
-            -23.5505,
-            -46.6333,
+          initialCenter: LatLng(
+            latitude,
+            longitude,
           ),
 
-          initialZoom: 8,
+          initialZoom: 10,
         ),
 
         children: [
@@ -39,6 +39,9 @@ class WeatherMap
 
             urlTemplate:
                 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
+
+            userAgentPackageName:
+                'com.climabrasil.app',
           ),
 
           MarkerLayer(
@@ -47,20 +50,22 @@ class WeatherMap
 
               Marker(
 
-                point:
-                    const LatLng(
-                  -23.5505,
-                  -46.6333,
+                point: LatLng(
+                  latitude,
+                  longitude,
                 ),
 
-                child:
-                    const Icon(
-                  Icons.location_pin,
+                width: 50,
+
+                height: 50,
+
+                child: const Icon(
+                  Icons.location_on,
                   size: 40,
                 ),
               ),
             ],
-          )
+          ),
         ],
       ),
     );

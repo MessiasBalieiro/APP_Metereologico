@@ -1,111 +1,155 @@
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import '../models/forecast_model.dart';
 import '../services/brasil_api_service.dart';
-import '../services/supabase_service.dart';
+import '../services/location_service.dart';
+import '../services/location_to_city_service.dart';
 import '../services/preferences_service.dart';
+import '../services/supabase_service.dart';
 
 class WeatherProvider extends ChangeNotifier {
+  final BrasilApiService _api = BrasilApiService();
 
-  final BrasilApiService _api =
-      BrasilApiService();
-
-  final SupabaseService _database =
-      SupabaseService();
+  final SupabaseService _database = SupabaseService();
 
   bool loading = false;
 
+  bool darkMode = false;
+
   String selectedCity = '';
 
-  double latitude = 0;
+  double currentLatitude = -23.5505;
 
-  double longitude = 0;
+  double currentLongitude = -46.6333;
 
   List<ForecastModel> forecasts = [];
 
-  Future<void> searchCity(
-      String city) async {
+  List<String> favorites = [];
 
+  Future<void> searchCity(String city) async {
     try {
-
       loading = true;
       notifyListeners();
 
-      final cities =
-          await _api.searchCity(city);
+      final cities = await _api.searchCity(city);
 
       if (cities.isEmpty) {
-        throw Exception(
-          'Cidade não encontrada',
-        );
+        throw Exception('Cidade não encontrada');
       }
 
       final cityData = cities.first;
 
       final forecastResponse =
-          await _api.getForecast(
-            cityData['id'],
-          );
+          await _api.getForecast(cityData['id']);
 
       forecasts.clear();
 
-      for (var item
-          in forecastResponse['clima']) {
-
+      for (final item in forecastResponse['clima']) {
         forecasts.add(
           ForecastModel.fromJson(item),
         );
       }
 
-      selectedCity =
-          cityData['nome'];
+      selectedCity = cityData['nome'];
 
       await _database.saveWeather({
         "city": selectedCity,
+        "latitude": currentLatitude,
+        "longitude": currentLongitude,
         "temperature":
-            forecasts.first.maxTemp,
+            forecasts.isNotEmpty
+                ? forecasts.first.maxTemp
+                : 0,
         "humidity": 0,
         "precipitation": 0,
         "weather_condition":
-            forecasts.first.condition,
+            forecasts.isNotEmpty
+                ? forecasts.first.condition
+                : "",
       });
-
     } catch (e) {
-
       debugPrint(
-        'Erro: $e',
+        'Erro ao buscar cidade: $e',
       );
-
     } finally {
-
       loading = false;
       notifyListeners();
     }
   }
-  List<String> favorites = [];
 
-Future<void> loadFavorites() async {
+  Future<void> loadFavorites() async {
+    favorites =
+        await PreferencesService()
+            .getFavorites();
 
-  favorites =
+    notifyListeners();
+  }
+
+  Future<void> addFavorite(
+      String city) async {
+    if (!favorites.contains(city)) {
+      favorites.add(city);
+
       await PreferencesService()
-          .getFavorites();
+          .saveFavorites(
+        favorites,
+      );
 
-  notifyListeners();
-}
+      notifyListeners();
+    }
+  }
 
-Future<void> addFavorite(
-    String city) async {
+  Future<void> loadTheme() async {
+    final prefs =
+        await SharedPreferences.getInstance();
 
-  if (!favorites.contains(city)) {
+    darkMode =
+        prefs.getBool('darkMode') ?? false;
 
-    favorites.add(city);
+    notifyListeners();
+  }
 
-    await PreferencesService()
-        .saveFavorites(
-      favorites,
+  Future<void> toggleTheme() async {
+    darkMode = !darkMode;
+
+    final prefs =
+        await SharedPreferences.getInstance();
+
+    await prefs.setBool(
+      'darkMode',
+      darkMode,
     );
 
     notifyListeners();
   }
-}
+
+  Future<void> loadCurrentCity() async {
+    try {
+      final position =
+          await LocationService()
+              .getCurrentLocation();
+
+      currentLatitude =
+          position.latitude;
+
+      currentLongitude =
+          position.longitude;
+
+      final city =
+          await LocationToCityService()
+              .getCityName(
+        currentLatitude,
+        currentLongitude,
+      );
+
+      if (city.isNotEmpty) {
+        await searchCity(city);
+      }
+    } catch (e) {
+      debugPrint(
+        'Erro ao obter localização: $e',
+      );
+    }
+  }
 }
