@@ -45,3 +45,4 @@ Antes de começar, você precisará ter instalado em sua máquina:
    ```bash
    git clone (https://github.com/MessiasBalieiro/APP_Metereologico)
    cd app_metereologico
+🌐 **Acesse o app online:** [Clique aqui para testar a versão Web](https://messiasbalieiro.github.io/APP_Metereologico/)
