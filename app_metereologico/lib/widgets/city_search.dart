@@ -3,66 +3,46 @@ import 'package:provider/provider.dart';
 
 import '../providers/weather_provider.dart';
 
-class CitySearch
-    extends StatefulWidget {
-
+class CitySearch extends StatefulWidget {
   const CitySearch({
     super.key,
   });
 
   @override
-  State<CitySearch>
-      createState() =>
-          _CitySearchState();
+  State<CitySearch> createState() => _CitySearchState();
 }
 
-class _CitySearchState
-    extends State<CitySearch> {
-
-  final controller =
-      TextEditingController();
+class _CitySearchState extends State<CitySearch> {
+  final controller = TextEditingController();
 
   @override
-  Widget build(
-      BuildContext context) {
-
+  Widget build(BuildContext context) {
     return Row(
-
       children: [
-
         Expanded(
-
           child: TextField(
-
-            controller:
-                controller,
-
-            decoration:
-                const InputDecoration(
-              labelText:
-                  'Cidade',
+            controller: controller,
+            decoration: InputDecoration(
+              labelText: 'Cidade',
+              prefixIcon: const Icon(
+                Icons.location_city,
+              ),
+              suffixIcon: const Icon(
+                Icons.search,
+              ),
             ),
           ),
         ),
-
         const SizedBox(
           width: 10,
         ),
-
         ElevatedButton(
-
           onPressed: () {
-
-            context
-                .read<
-                    WeatherProvider>()
-                .searchCity(
+            context.read<WeatherProvider>().searchCity(
                   controller.text,
                 );
           },
-
-          child:
-              const Text(
+          child: const Text(
             'Buscar',
           ),
         ),

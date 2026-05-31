@@ -42,7 +42,13 @@ class WeatherProvider extends ChangeNotifier {
 
       final cityData = cities.first;
 
-      final forecastResponse = await _api.getForecast(cityData['id']);
+      final forecastResponse = await _api.getForecast(
+        cityData['id'],
+      );
+
+      debugPrint(
+        'Resposta da API: ${forecastResponse['clima'][0]}',
+      );
 
       forecasts.clear();
 
